@@ -1,0 +1,144 @@
+<%- include('layout.ejs', { body: ` <div class="generator-container">
+    <div class="generator-form">
+        <h2>Generate QR Code</h2>
+        ${typeof error !== 'undefined' && error ? '<div class="alert alert-error">' + error + '</div>' : ''}
+
+        <div class="form-group">
+            <label for="qrType">Select Type</label>
+            <select id="qrType" onchange="toggleFields()">
+                <option value="URL">URL / Link</option>
+                <option value="Text">Plain Text</option>
+                <option value="Email">Email</option>
+                <option value="Phone">Phone Number</option>
+                <option value="WiFi">WiFi Network</option>
+                <option value="Contact">Contact Card (vCard)</option>
+            </select>
+        </div>
+
+        <form action="/qr/generate" method="POST" id="mainForm">
+            <input type="hidden" name="type" id="hiddenType" value="URL">
+
+            <div id="basicField" class="qr-field-group">
+                <div class="form-group">
+                    <label for="content" id="contentLabel">URL / Link</label>
+                    <textarea id="content" name="content" rows="3" placeholder="https://example.com"
+                        required></textarea>
+                </div>
+            </div>
+
+            <div id="emailField" class="qr-field-group" style="display: none;">
+                <div class="form-group"><label>Email Address</label><input type="email" name="email"></div>
+                <div class="form-group"><label>Subject</label><input type="text" name="subject"></div>
+                <div class="form-group"><label>Message Body</label><textarea name="body" rows="3"></textarea></div>
+            </div>
+
+            <div id="phoneField" class="qr-field-group" style="display: none;">
+                <div class="form-group"><label>Phone Number</label><input type="tel" name="phone"></div>
+            </div>
+
+            <div id="wifiField" class="qr-field-group" style="display: none;">
+                <div class="form-group"><label>Network Name (SSID)</label><input type="text" name="ssid"></div>
+                <div class="form-group"><label>Password</label><input type="text" name="password"></div>
+                <div class="form-group">
+                    <label>Encryption</label>
+                    <select name="encryption">
+                        <option value="WPA">WPA/WPA2</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">None</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="contactField" class="qr-field-group" style="display: none;">
+                <div class="form-group"><label>First Name</label><input type="text" name="firstName"></div>
+                <div class="form-group"><label>Last Name</label><input type="text" name="lastName"></div>
+                <div class="form-group"><label>Phone</label><input type="tel" name="contactPhone"></div>
+                <div class="form-group"><label>Email</label><input type="email" name="contactEmail"></div>
+            </div>
+
+            <div class="form-group checkbox-group" id="oneTimeGroup">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="isOneTime" id="isOneTime" style="width: auto;">
+                    One-Time Use (Invalid after first scan)
+                </label>
+            </div>
+
+            <div class="advanced-options" id="advancedGroup"
+                style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                <h4 style="margin-bottom: 1rem; color: var(--text-light);">Optional Advanced Features (URLs Only)</h4>
+                <div class="form-group">
+                    <label for="expiry">Expiry Date & Time</label>
+                    <input type="datetime-local" name="expiry" id="expiry">
+                </div>
+                <div class="form-group">
+                    <label for="qrPassword">Password Protection</label>
+                    <input type="password" name="qrPassword" id="qrPassword" placeholder="Leave blank for no password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.5rem;">Generate & Save</button>
+        </form>
+    </div>
+
+    ${typeof qrImage !== 'undefined' && qrImage ? `
+    <div class="generator-result">
+        <h3>Your QR Code</h3>
+        <div class="qr-card">
+            <img src="${qrImage}" alt="Generated QR">
+            <div class="qr-actions">
+                <a href="${qrImage}" download="qr-code.png" class="btn btn-primary">Download</a>
+                <a href="/qr/dashboard" class="btn btn-secondary">Go to Dashboard</a>
+            </div>
+        </div>
+    </div>
+    ` : ''}
+    </div>
+
+    <script>
+        function toggleFields() {
+            const type = document.getElementById('qrType').value;
+            document.getElementById('hiddenType').value = type;
+
+            document.querySelectorAll('.qr-field-group').forEach(el => {
+                el.style.display = 'none';
+                el.querySelectorAll('input, textarea').forEach(input => input.removeAttribute('required'));
+            });
+
+            if (type == 'URL') {
+                document.getElementById('oneTimeGroup').style.display = 'block';
+                document.getElementById('advancedGroup').style.display = 'block';
+                const group = document.getElementById('basicField');
+                group.style.display = 'block';
+                document.getElementById('contentLabel').innerText = 'URL / Link';
+                group.querySelector('textarea').setAttribute('required', 'true');
+            } else if (type == 'Text') {
+                document.getElementById('oneTimeGroup').style.display = 'none';
+                document.getElementById('advancedGroup').style.display = 'none';
+                document.getElementById('isOneTime').checked = false;
+                const group = document.getElementById('basicField');
+                group.style.display = 'block';
+                document.getElementById('contentLabel').innerText = 'Plain Text';
+                group.querySelector('textarea').setAttribute('required', 'true');
+            } else if (type == 'Email') {
+                document.getElementById('oneTimeGroup').style.display = 'none';
+                document.getElementById('isOneTime').checked = false;
+                const group = document.getElementById('emailField');
+                group.style.display = 'block';
+                group.querySelector('input[name="email"]').setAttribute('required', 'true');
+            } else if (type === 'Phone') {
+                const group = document.getElementById('phoneField');
+                group.style.display = 'block';
+                group.querySelector('input[name="phone"]').setAttribute('required', 'true');
+            } else if (type === 'WiFi') {
+                const group = document.getElementById('wifiField');
+                group.style.display = 'block';
+                group.querySelector('input[name="ssid"]').setAttribute('required', 'true');
+            } else if (type === 'Contact') {
+                const group = document.getElementById('contactField');
+                group.style.display = 'block';
+                group.querySelector('input[name="firstName"]').setAttribute('required', 'true');
+                group.querySelector('input[name="contactPhone"]').setAttribute('required', 'true');
+            }
+        }
+    </script>
+    ` }) %>

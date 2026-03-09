@@ -1,0 +1,17 @@
+<%- include('layout.ejs', { body: ` <div class="auth-box">
+    <h2>Welcome Back</h2>
+    ${typeof error !== 'undefined' && error ? '<div class="alert alert-error">' + error + '</div>' : ''}
+    <form action="/auth/login" method="POST">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+    </form>
+    <p class="auth-link">Don't have an account? <a href="/signup">Sign up here</a></p>
+    </div>
+    ` }) %>

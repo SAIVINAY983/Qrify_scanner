@@ -1,0 +1,28 @@
+<%- include('layout.ejs', { body: ` <div class="dashboard-header">
+    <h2>Your QR Codes</h2>
+    <a href="/qr/generate" class="btn btn-primary">Generate New</a>
+    </div>
+
+    <div class="qr-grid">
+        ${qrcodes.length === 0 ? '<p>You have not generated any QR codes yet.</p>' : ''}
+        ${qrcodes.map(qr => `
+        <div class="qr-card">
+            <img src="${qr.qrImage}" alt="QR Code">
+            <div class="qr-info">
+                <span class="qr-badge">${qr.type}</span>
+                <p class="qr-content" title="${qr.content}">${qr.content.length > 30 ? qr.content.substring(0, 30) +
+                    '...' : qr.content}</p>
+                <small class="qr-date">${new Date(qr.createdAt).toLocaleDateString()}</small>
+            </div>
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <a href="${qr.qrImage}" download="qr-${qr.type}.png" class="btn btn-secondary btn-sm"
+                    style="flex: 1;">Download</a>
+                <form action="/qr/delete/${qr._id}" method="POST" style="flex: 1;"
+                    onsubmit="return confirm('Delete this QR code?');">
+                    <button type="submit" class="btn btn-danger btn-sm" style="width: 100%;">Delete</button>
+                </form>
+            </div>
+        </div>
+        `).join('')}
+    </div>
+    ` }) %>

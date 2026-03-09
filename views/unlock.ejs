@@ -1,0 +1,16 @@
+<%- include('layout.ejs', { body: ` <div class="auth-box">
+    <h2>protected link!!</h2>
+    <p style="text-align: center; color: gray;">enter the password below to see the link</p>
+
+    ${typeof error !== 'undefined' && error ? '<p style="color:red; text-align:center;">' + error + '</p>' : ''}
+
+    <form action="/r/${codeId}" method="POST">
+        <div>
+            <label>Password</label>
+            <input type="password" name="password" required>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary btn-block">unlock</button>
+    </form>
+    </div>
+    ` }) %>
